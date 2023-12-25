@@ -49,18 +49,44 @@ def migrate(until: int | None, fake: bool) -> int:
 
     sys.stdout.write(f"Collected {len(migrations_map)} migrations\n")
     last_migration_id = _get_last_migration_id()
+    if last_migration_id is None:
+        sys.stdout.write(f"No applied migrations were found\n")
+    else:
+        sys.stdout.write(f"Last applied migration is #{last_migration_id}\n")
 
-    new_migrations = sorted(((m_id, m) for m_id, m in migrations_map.items() if m_id > last_migration_id), key=lambda x: x[0])
-    for m_id, migration in new_migrations:
-        if until and m_id > until:
-            break
-        message = "Fake applying" if fake else "Applying"
-        sys.stdout.write(f"{message} {migration}... ")
+    if until is not None and until < last_migration_id:
+        command = "backwards"
+        log_action = "Rolling back"
+        migrations_to_apply = (
+            (m_id, m) for m_id, m in migrations_map.items()
+            if m_id <= last_migration_id and m_id > until
+        )
+        migrations_to_apply = sorted(migrations_to_apply, key=lambda x: -x[0])
+    else:
+        command = "forwards"
+        log_action = "Applying"
+        migrations_to_apply = (
+            (m_id, m) for m_id, m in migrations_map.items()
+            if m_id > last_migration_id and (until is None or m_id <= until)
+        )
+        migrations_to_apply = sorted(migrations_to_apply, key=lambda x: x[0])
+    if not migrations_to_apply:
+        sys.stdout.write("Nothing to migrate\n")
+        return 0
+
+    log_action = f"Fake {log_action.lower()}" if fake else log_action
+    for m_id, migration in migrations_to_apply:
+        sys.stdout.write(f"{log_action} {migration}... ")
         if not fake:
             migration_obj = import_module(f"{config.migrations_dir}.{migration[:-3]}")
-            migration_obj.forwards()
-        _insert_migration(m_id=m_id, name=migration)
+            method = getattr(migration_obj, command)
+            method()
+        if command == "forwards":
+            _insert_migration(m_id=m_id, name=migration)
+        else:
+            _delete_migration(m_id=m_id)
         sys.stdout.write("OK\n")
+    return 0
 
 
 def _get_last_migration_id() -> int:
@@ -99,3 +125,12 @@ def _insert_migration(m_id: int, name: str) -> None:
                 INSERT INTO simple_migrations (id, name, created_at)
                 VALUES (%s, %s, %s)
             """, (m_id, name, created_at))
+
+
+def _delete_migration(m_id: int) -> None:
+    config = Config()
+    with psycopg.connect(config.connection_string) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                DELETE FROM simple_migrations WHERE id = %s
+            """, (m_id, ))

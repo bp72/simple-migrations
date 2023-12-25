@@ -9,7 +9,6 @@ class ActionType(StrEnum):
     init = "init"
     generate = "generate"
     migrate = "migrate"
-    fake = "fake"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -22,8 +21,11 @@ def main(argv: list[str] | None = None) -> int:
         return initial_setup()
     if action == ActionType.generate:
         return generate_migration()
-    if action in (ActionType.migrate, ActionType.fake):
-        fake = action == ActionType.fake
+    if action in ActionType.migrate:
+        fake = False
+        if "--fake" in argv:
+            fake = True
+            argv.pop(argv.index("--fake"))
         until = None
         if len(argv) > 1:
             try:
