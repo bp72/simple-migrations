@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "simple-migrations"
+version = "0.1.0"
+description = ""
+authors = ["Pavel Bitiukov <pavleg.bityukov@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+psycopg = "^3.1"
+
+[tool.poetry.scripts]
+simple-migrations = "simple_migrations.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
