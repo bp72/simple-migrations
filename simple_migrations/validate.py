@@ -18,3 +18,4 @@ def validate_migrations() -> bool:
     sys.stdout.write(f"Collected {len(applied_migrations)} applied migrations from the database")
 
     file_migrations = os.listdir(config.migrations_dir)
+    
