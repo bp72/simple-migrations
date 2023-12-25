@@ -9,6 +9,7 @@ class ActionType(StrEnum):
     init = "init"
     generate = "generate"
     migrate = "migrate"
+    fake = "fake"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -21,6 +22,14 @@ def main(argv: list[str] | None = None) -> int:
         return initial_setup()
     if action == ActionType.generate:
         return generate_migration()
-    if action == ActionType.migrate:
-        return migrate()
+    if action in (ActionType.migrate, ActionType.fake):
+        fake = action == ActionType.fake
+        until = None
+        if len(argv) > 1:
+            try:
+                until = int(argv[1])
+            except ValueError:
+                sys.stderr.write(f"Invalid version: {argv[1]}, please pass the migration number")
+                return 1
+        return migrate(until=until, fake=fake)
     return 1

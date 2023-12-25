@@ -34,7 +34,7 @@ def generate_migration() -> int:
     return 0
 
 
-def migrate() -> int:
+def migrate(until: int | None, fake: bool) -> int:
     config = Config()
     migrations_map = {}
     for file_name in os.listdir(config.migrations_dir):
@@ -52,9 +52,13 @@ def migrate() -> int:
 
     new_migrations = sorted(((m_id, m) for m_id, m in migrations_map.items() if m_id > last_migration_id), key=lambda x: x[0])
     for m_id, migration in new_migrations:
-        sys.stdout.write(f"Applying {migration}... ")
-        migration_obj = import_module(f"{config.migrations_dir}.{migration[:-3]}")
-        migration_obj.forwards()
+        if until and m_id > until:
+            break
+        message = "Fake applying" if fake else "Applying"
+        sys.stdout.write(f"{message} {migration}... ")
+        if not fake:
+            migration_obj = import_module(f"{config.migrations_dir}.{migration[:-3]}")
+            migration_obj.forwards()
         _insert_migration(m_id=m_id, name=migration)
         sys.stdout.write("OK\n")
 
