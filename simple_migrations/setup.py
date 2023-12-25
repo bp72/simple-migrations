@@ -25,6 +25,10 @@ def initial_setup(
         sys.stderr.write(f"{config.migrations_dir} directory exists and not empty")
         return 1
 
-    os.mkdir(config.migrations_dir)
+    if not os.path.exists(config.migrations_dir):
+        os.mkdir(config.migrations_dir)
+    with open(f"{config.migrations_dir}/__init__.py", "w") as f:
+        f.write("\n")
+
     sys.stdout.write(f"Created {config.migrations_dir} directory\n")
     return 0
