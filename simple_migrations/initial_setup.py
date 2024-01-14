@@ -1,14 +1,12 @@
 import os
 import sys
 
-from simple_migrations.config import Config
+from simple_migrations.config import simple_migrations_config
 import psycopg
 
 
-def initial_setup(
-
-) -> int:
-    config = Config()
+def initial_setup() -> int:
+    config = simple_migrations_config.get()
     with psycopg.connect(config.connection_string) as conn:
         with conn.cursor() as cur:
             cur.execute("""

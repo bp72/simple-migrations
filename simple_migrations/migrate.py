@@ -5,14 +5,13 @@ from importlib import import_module
 
 import psycopg
 
-from simple_migrations.config import Config
-
+from simple_migrations.config import simple_migrations_config
 
 FILE_DIR = os.path.dirname(__file__)
 
 
 def generate_migration() -> int:
-    config = Config()
+    config = simple_migrations_config.get()
     next_migration_id = _format_migration_id(_get_last_migration_id() + 1)
     conflicting_file_name = next(
         (
@@ -35,7 +34,7 @@ def generate_migration() -> int:
 
 
 def migrate(until: int | None, fake: bool) -> int:
-    config = Config()
+    config = simple_migrations_config.get()
     migrations_map = {}
     for file_name in os.listdir(config.migrations_dir):
         migration_id = _get_migration_id_from_name(file_name)
@@ -90,7 +89,7 @@ def migrate(until: int | None, fake: bool) -> int:
 
 
 def _get_last_migration_id() -> int:
-    config = Config()
+    config = simple_migrations_config.get()
     with psycopg.connect(config.connection_string) as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -118,7 +117,7 @@ def _get_migration_id_from_name(name: str) -> int | None:
 
 def _insert_migration(m_id: int, name: str) -> None:
     created_at = datetime.now(timezone.utc)
-    config = Config()
+    config = simple_migrations_config.get()
     with psycopg.connect(config.connection_string) as conn:
         with conn.cursor() as cur:
             cur.execute("""
@@ -128,7 +127,7 @@ def _insert_migration(m_id: int, name: str) -> None:
 
 
 def _delete_migration(m_id: int) -> None:
-    config = Config()
+    config = simple_migrations_config.get()
     with psycopg.connect(config.connection_string) as conn:
         with conn.cursor() as cur:
             cur.execute("""

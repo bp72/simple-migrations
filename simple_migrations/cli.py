@@ -1,8 +1,9 @@
 import sys
 from enum import StrEnum
 
+from simple_migrations.config import configure
 from simple_migrations.migrate import generate_migration, migrate
-from simple_migrations.setup import initial_setup
+from simple_migrations.initial_setup import initial_setup
 
 
 class ActionType(StrEnum):
@@ -12,6 +13,7 @@ class ActionType(StrEnum):
 
 
 def main(argv: list[str] | None = None) -> int:
+    configure()
     argv = argv or sys.argv[1:]
     if not argv:
         # TODO: print help
@@ -34,4 +36,6 @@ def main(argv: list[str] | None = None) -> int:
                 sys.stderr.write(f"Invalid version: {argv[1]}, please pass the migration number")
                 return 1
         return migrate(until=until, fake=fake)
+    else:
+        sys.stderr.write("Unknown command\n")
     return 1
