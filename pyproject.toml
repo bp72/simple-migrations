@@ -1,12 +1,13 @@
 [tool.poetry]
 name = "simple-migrations"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Pavel Bitiukov <pavleg.bityukov@gmail.com>"]
 readme = "README.md"
+repository = "https://github.com/bp72/simple-migrations"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.11"
 psycopg = "^3.1"
 configparser = "^6.0"
 
