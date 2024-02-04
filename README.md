@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/simple-migrations.svg)](https://pypi.org/project/simple-migrations)
 [![Python versions](https://img.shields.io/pypi/pyversions/simple-migrations.svg)](https://pypi.org/project/simple-migrations)
 
-### Please, notice that the library is early in the development, use it at your own risk. The feedback and contributions are appreciated!
+### The feedback and contributions are appreciated!
 
 Make your database migrations as simple as possible!
 
