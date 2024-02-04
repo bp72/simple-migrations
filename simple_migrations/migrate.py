@@ -1,7 +1,7 @@
 import os
 import sys
 from datetime import datetime, timezone
-from importlib import import_module
+from importlib import util as importlib_util
 
 import psycopg
 
@@ -77,7 +77,9 @@ def migrate(until: int | None, fake: bool) -> int:
     for m_id, migration in migrations_to_apply:
         sys.stdout.write(f"{log_action} {migration}... ")
         if not fake:
-            migration_obj = import_module(f"{config.migrations_dir}.{migration[:-3]}")
+            spec = importlib_util.spec_from_file_location(migration[:-3], f"{config.migrations_dir}/{migration}")
+            migration_obj = importlib_util.module_from_spec(spec)
+            spec.loader.exec_module(migration_obj)
             method = getattr(migration_obj, command)
             method()
         if command == "forwards":
